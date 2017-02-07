@@ -65,6 +65,8 @@ namespace OxyPlot.Axes
             this.AbsoluteMaximum = double.MaxValue;
             this.AbsoluteMinimum = double.MinValue;
 
+            this.Center = double.NaN;
+
             this.Minimum = double.NaN;
             this.Maximum = double.NaN;
             this.MinorStep = double.NaN;
@@ -229,6 +231,11 @@ namespace OxyPlot.Axes
         /// Gets or sets the thickness of the axis line. The default value is <c>1</c>.
         /// </summary>
         public double AxislineThickness { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that should be kept in the center of the axis.
+        /// </summary>
+        public double Center { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to clip the axis title. The default value is <c>true</c>.
@@ -1412,6 +1419,19 @@ namespace OxyPlot.Axes
             if (this.AbsoluteMaximum - this.AbsoluteMinimum < this.MinimumRange)
             {
                 throw new InvalidOperationException("MinimumRange should be smaller than AbsoluteMaximum-AbsoluteMinimum.");
+            }
+
+            // make sure the value of Center is located at the center of the axis
+            if (!double.IsNaN(Center)) {
+                var deltaMinimum = Math.Abs(this.ActualMinimum - this.Center);
+                var deltaMaximum = Math.Abs(this.ActualMaximum - this.Center);
+
+                var newRange = Math.Max(deltaMinimum, deltaMaximum) * 2;
+                newRange = Math.Max(newRange, this.MinimumRange);
+                newRange = Math.Min(newRange, this.MaximumRange);
+
+                this.ActualMinimum = this.Center - newRange / 2;
+                this.ActualMaximum = this.Center + newRange / 2;
             }
 
             // Coerce the minimum range
